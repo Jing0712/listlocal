@@ -1,13 +1,14 @@
 import "server-only";
-import { MongoClient, type Db, type ObjectId } from "mongodb";
+import { MongoClient, type Db, type ObjectId, type WithId } from "mongodb";
 import { optionalEnv, requireEnv } from "./env";
 import type { Issue, Listing } from "./compliance/types";
 import type { PipelineResult, Step } from "./ai/pipeline";
 
 export type Plan = "free" | "pro";
 
-export type UserDoc = {
-  _id: ObjectId;
+// Stored fields; MongoDB adds _id on insert (reads return WithId<...>).
+export type UserDoc = WithId<UserFields>;
+export type UserFields = {
   email: string;
   passwordHash: string;
   emailVerified: boolean;
@@ -19,16 +20,18 @@ export type UserDoc = {
   subscriptionStatus?: string;
 };
 
-export type TokenDoc = {
-  _id: ObjectId;
+// Stored fields; MongoDB adds _id on insert (reads return WithId<...>).
+export type TokenDoc = WithId<TokenFields>;
+export type TokenFields = {
   userId: ObjectId;
   tokenHash: string;
   purpose: "verify-email";
   expiresAt: Date;
 };
 
-export type ListingDoc = {
-  _id: ObjectId;
+// Stored fields; MongoDB adds _id on insert (reads return WithId<...>).
+export type ListingDoc = WithId<ListingFields>;
+export type ListingFields = {
   userId: ObjectId;
   createdAt: Date;
   status: "running" | "done" | "failed";
@@ -41,8 +44,9 @@ export type ListingDoc = {
   latencyMs?: number;
 };
 
-export type CheckDoc = {
-  _id: ObjectId;
+// Stored fields; MongoDB adds _id on insert (reads return WithId<...>).
+export type CheckDoc = WithId<CheckFields>;
+export type CheckFields = {
   userId: ObjectId;
   createdAt: Date;
   listing: Listing;
@@ -91,10 +95,10 @@ async function ensureIndexes(db: Db) {
 export async function collections() {
   const db = await getDb();
   return {
-    users: db.collection<UserDoc>("users"),
-    tokens: db.collection<TokenDoc>("tokens"),
-    listings: db.collection<ListingDoc>("listings"),
-    checks: db.collection<CheckDoc>("checks"),
+    users: db.collection<UserFields>("users"),
+    tokens: db.collection<TokenFields>("tokens"),
+    listings: db.collection<ListingFields>("listings"),
+    checks: db.collection<CheckFields>("checks"),
     rateLimits: db.collection<{ _id: string; count: number; expiresAt: Date }>("rateLimits"),
     stripeEvents: db.collection<{ _id: string; type: string; createdAt: Date }>("stripeEvents"),
   };
