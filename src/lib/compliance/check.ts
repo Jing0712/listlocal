@@ -379,7 +379,9 @@ export function checkUnsupportedNumbers(fields: FieldEntry[], sourceText: string
     for (const x of inputNums) {
       for (const f of factors) {
         const c = x * f;
-        if (Math.abs(c - n) <= Math.max(0.06, Math.abs(c) * 0.02)) return true;
+        // Converted values are usually rounded to 1 decimal, or to a whole number for small values.
+        if (Math.abs(c - n) <= Math.max(0.06, Math.abs(c) * 0.006)) return true;
+        if (Number.isInteger(n) && c < 100 && Math.round(c) === n) return true;
       }
       // Fahrenheit from Celsius and back
       if (Math.abs(x * 1.8 + 32 - n) <= 1 || Math.abs((x - 32) / 1.8 - n) <= 1) return true;
