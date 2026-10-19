@@ -5,6 +5,7 @@ import Link from "next/link";
 import { api, ApiError } from "@/lib/api-client";
 
 type Img = { mediaType: "image/jpeg"; data: string; preview: string };
+type Quota = { plan: "free" | "pro"; used: number; limit: number | null; remaining: number | null };
 
 const SAMPLE = {
   productName: "硅胶折叠水杯",
@@ -17,20 +18,21 @@ const SAMPLE = {
   avoidBrands: "Stanley, YETI",
 };
 
-// Approximate, time-based hints (the request is a single call); the real step log is shown on the result page.
-const STAGES = ["AI 正在撰写 listing…", "规则检查，必要时自动修正…", "还在处理，修正需要多一点时间…", "快好了…"];
+// Time-based hints only: the request is a single call. The real step log is on the result page.
+const STAGES = ["Writing your listing…", "Checking every line against the rules…", "Fixing what the check found…", "Almost done…"];
 
-export function GenerateForm({ outOfQuota }: { outOfQuota: boolean }) {
-  const [f, setF] = useState({ productName: "", category: "", description: "", specs: "", targetCustomer: "", ownBrand: "", avoidBrands: "" });
+export function GenerateForm({ initialName, quota }: { initialName: string; quota: Quota }) {
+  const [f, setF] = useState({ productName: initialName, category: "", description: "", specs: "", targetCustomer: "", ownBrand: "", avoidBrands: "" });
   const [images, setImages] = useState<Img[]>([]);
   const [busy, setBusy] = useState(false);
   const [stage, setStage] = useState(0);
   const [error, setError] = useState<{ msg: string; quota?: boolean; id?: string } | null>(null);
+  const outOfQuota = quota.remaining === 0;
 
   useEffect(() => {
     if (!busy) return;
     setStage(0);
-    const t = setInterval(() => setStage((s) => Math.min(s + 1, STAGES.length - 1)), 9000);
+    const t = setInterval(() => setStage((s) => Math.min(s + 1, STAGES.length - 1)), 10000);
     return () => clearInterval(t);
   }, [busy]);
 
@@ -43,7 +45,7 @@ export function GenerateForm({ outOfQuota }: { outOfQuota: boolean }) {
       try {
         next.push(await downscale(file));
       } catch {
-        setError({ msg: `图片 ${file.name} 读取失败，请换一张 JPG/PNG` });
+        setError({ msg: `Could not read ${file.name}. Try a JPG or PNG.` });
       }
     }
     setImages(next);
@@ -68,61 +70,69 @@ export function GenerateForm({ outOfQuota }: { outOfQuota: boolean }) {
     }
   }
 
-  if (outOfQuota) {
-    return (
-      <div className="card space-y-3">
-        <p className="font-medium">免费额度已经用完了</p>
-        <p className="text-sm text-muted">升级 Pro 可以无限生成。检查已有 listing 的功能仍然免费。</p>
-        <div className="flex gap-2">
-          <Link href="/app/account" className="btn-accent">升级 Pro</Link>
-          <Link href="/app/check" className="btn-ghost">检查已有 listing</Link>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <form onSubmit={submit} className="grid gap-6 md:grid-cols-[1fr_280px]">
-      <div className="card space-y-4">
-        <div className="flex justify-end">
-          <button type="button" className="text-xs text-accent underline" onClick={() => setF(SAMPLE)}>
-            填入示例
+    <form onSubmit={submit} className="grid gap-4 lg:grid-cols-[1fr_320px]">
+      <div className="panel space-y-5">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-extrabold">Product details</h2>
+          <button type="button" className="btn-quiet" onClick={() => setF(SAMPLE)}>
+            Fill in an example
           </button>
         </div>
-        <Field label="产品名称 *" hint="中文即可">
-          <input className="input" required maxLength={200} value={f.productName} onChange={set("productName")} />
+        <Field label="Product name" required hint="Chinese is fine">
+          <input className="field" required maxLength={200} value={f.productName} onChange={set("productName")} />
         </Field>
-        <Field label="类目">
-          <input className="input" maxLength={100} value={f.category} onChange={set("category")} placeholder="例如：厨房用品 / 宠物玩具" />
+        <Field label="Category">
+          <input className="field" maxLength={100} value={f.category} onChange={set("category")} placeholder="e.g. Kitchen, Pet toys, 户外用品" />
         </Field>
-        <Field label="产品描述和卖点 *" hint="材质、用途、和别家相比好在哪里">
-          <textarea className="input min-h-32" required minLength={10} maxLength={4000} value={f.description} onChange={set("description")} />
+        <Field label="Description and selling points" required hint="Materials, uses, and what makes it better than similar products">
+          <textarea className="field min-h-32" required minLength={10} maxLength={4000} value={f.description} onChange={set("description")} />
         </Field>
-        <Field label="参数" hint="尺寸、重量、容量、颜色、包装清单。AI 只会用这里写了的数字">
-          <textarea className="input min-h-20" maxLength={2000} value={f.specs} onChange={set("specs")} />
+        <Field label="Specs" hint="Size, weight, capacity, colors, what's in the box. The AI will only use numbers you put here.">
+          <textarea className="field min-h-20" maxLength={2000} value={f.specs} onChange={set("specs")} />
         </Field>
-        <Field label="目标买家">
-          <input className="input" maxLength={500} value={f.targetCustomer} onChange={set("targetCustomer")} />
+        <Field label="Who buys it">
+          <input className="field" maxLength={500} value={f.targetCustomer} onChange={set("targetCustomer")} />
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
-          <Field label="你的品牌名">
-            <input className="input" maxLength={60} value={f.ownBrand} onChange={set("ownBrand")} />
+          <Field label="Your brand name">
+            <input className="field" maxLength={60} value={f.ownBrand} onChange={set("ownBrand")} />
           </Field>
-          <Field label="不能出现的品牌" hint="用逗号分隔，例如竞品">
-            <input className="input" value={f.avoidBrands} onChange={set("avoidBrands")} />
+          <Field label="Brands to keep out" hint="Competitors, separated by commas">
+            <input className="field" value={f.avoidBrands} onChange={set("avoidBrands")} />
           </Field>
         </div>
       </div>
 
-      <div className="space-y-4">
-        <div className="card space-y-3">
-          <p className="label">产品图片（可选，最多 3 张）</p>
+      <aside className="space-y-4 lg:sticky lg:top-4 lg:self-start">
+        <div className="panel">
+          <p className="text-sm text-muted">Your plan</p>
+          {quota.limit === null ? (
+            <p className="mt-1 text-2xl font-extrabold text-tao">Pro, unlimited</p>
+          ) : (
+            <>
+              <p className="mt-1">
+                <span className="text-4xl font-extrabold text-tao">{quota.remaining}</span>
+                <span className="text-muted"> of {quota.limit} free listings left</span>
+              </p>
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-page">
+                <div className="tao-gradient h-full rounded-full" style={{ width: `${(100 * (quota.remaining ?? 0)) / quota.limit}%` }} />
+              </div>
+              <Link href="/app/account" className="mt-3 inline-block text-sm font-semibold text-tao">
+                Get unlimited with Pro
+              </Link>
+            </>
+          )}
+        </div>
+
+        <div className="panel space-y-3">
+          <p className="font-bold">Product photos <span className="font-normal text-muted">(optional, up to 3)</span></p>
           <div className="grid grid-cols-3 gap-2">
             {images.map((img, i) => (
               <button
                 type="button"
                 key={i}
-                title="点击移除"
+                aria-label={`Remove photo ${i + 1}`}
                 onClick={() => setImages(images.filter((_, j) => j !== i))}
                 className="aspect-square overflow-hidden rounded-lg border border-line"
               >
@@ -130,43 +140,59 @@ export function GenerateForm({ outOfQuota }: { outOfQuota: boolean }) {
                 <img src={img.preview} alt="" className="h-full w-full object-cover" />
               </button>
             ))}
+            {images.length < 3 && (
+              <label className="flex aspect-square cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-tao-line text-tao hover:bg-tao-soft">
+                <span className="text-2xl leading-none">+</span>
+                <span className="text-xs">Add</span>
+                <input type="file" accept="image/png,image/jpeg,image/webp" multiple className="sr-only" onChange={(e) => addImages(e.target.files)} />
+              </label>
+            )}
           </div>
-          {images.length < 3 && (
-            <input type="file" accept="image/png,image/jpeg,image/webp" multiple className="text-sm" onChange={(e) => addImages(e.target.files)} />
-          )}
-          <p className="hint">图片会压缩后发送给 AI 识别细节，不会公开。</p>
+          <p className="field-hint">Photos are resized and sent to the AI for this request only. They are not stored.</p>
         </div>
 
-        <button className="btn-accent w-full py-3 text-base" disabled={busy}>
-          {busy ? "生成中…" : "生成 listing"}
-        </button>
+        {outOfQuota ? (
+          <div className="panel space-y-3">
+            <p className="font-bold">You have used your free listings</p>
+            <p className="text-sm text-muted">Upgrade for unlimited listings. Checking listings you already have stays free.</p>
+            <Link href="/app/account" className="btn-tao w-full">Upgrade to Pro</Link>
+          </div>
+        ) : (
+          <button className="btn-tao w-full py-4 text-lg" disabled={busy}>
+            {busy ? "Working…" : "Generate listing"}
+          </button>
+        )}
+
         {busy && (
-          <div className="card space-y-2 text-sm">
-            <div className="h-1.5 overflow-hidden rounded bg-stone-100">
-              <div className="h-full animate-pulse bg-accent" style={{ width: `${25 + stage * 25}%` }} />
+          <div className="panel space-y-2 text-sm" role="status">
+            <div className="h-2 overflow-hidden rounded-full bg-page">
+              <div className="tao-gradient h-full rounded-full transition-[width] duration-1000" style={{ width: `${25 + stage * 22}%` }} />
             </div>
-            <p>{STAGES[stage]}</p>
-            <p className="hint">通常需要 20–60 秒，请不要关闭页面。</p>
+            <p className="font-semibold">{STAGES[stage]}</p>
+            <p className="text-muted">Usually 20 to 60 seconds. Keep this page open.</p>
           </div>
         )}
         {error && (
-          <div className="card space-y-2 border-red-200 bg-red-50 text-sm text-bad">
-            <p>{error.msg}</p>
-            {error.quota && <Link href="/app/account" className="btn-accent">升级 Pro</Link>}
-            {error.id && <Link href={`/app/listings/${error.id}`} className="underline">查看这次失败的记录</Link>}
+          <div className="panel space-y-2 text-sm" role="alert">
+            <p className="font-semibold text-bad">{error.msg}</p>
+            {error.quota && <Link href="/app/account" className="btn-tao">Upgrade to Pro</Link>}
+            {error.id && <Link href={`/app/listings/${error.id}`} className="font-semibold text-tao">See what happened</Link>}
           </div>
         )}
-      </div>
+      </aside>
     </form>
   );
 }
 
-function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+function Field({ label, hint, required, children }: { label: string; hint?: string; required?: boolean; children: React.ReactNode }) {
   return (
     <div>
-      <label className="label">{label}</label>
+      <label className="field-label">
+        {label}
+        {required && <span className="ml-0.5 text-tao">*</span>}
+      </label>
       {children}
-      {hint && <p className="hint mt-1">{hint}</p>}
+      {hint && <p className="field-hint">{hint}</p>}
     </div>
   );
 }

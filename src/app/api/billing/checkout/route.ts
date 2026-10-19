@@ -8,7 +8,7 @@ import { stripe } from "@/lib/stripe";
 /** Starts a Stripe Checkout subscription session (test mode). The plan is only upgraded by the webhook. */
 export const POST = route(async () => {
   const user = await requireUser();
-  if (user.plan === "pro") throw new HttpError(409, "你已经是 Pro 用户了");
+  if (user.plan === "pro") throw new HttpError(409, "You are already on Pro");
 
   const s = stripe();
   let customerId = user.stripeCustomerId;
@@ -29,6 +29,6 @@ export const POST = route(async () => {
     success_url: `${appUrl()}/app/account?checkout=success`,
     cancel_url: `${appUrl()}/app/account?checkout=cancelled`,
   });
-  if (!session.url) throw new HttpError(502, "Stripe 没有返回付款链接");
+  if (!session.url) throw new HttpError(502, "Stripe did not return a checkout link");
   return NextResponse.json({ url: session.url });
 });

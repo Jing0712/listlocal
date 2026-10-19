@@ -22,8 +22,8 @@ export async function sendVerificationEmail(userId: ObjectId, email: string) {
   const link = `${appUrl()}/api/auth/verify?token=${token}`;
   await sendEmail({
     to: email,
-    subject: "验证你的 ListLocal 邮箱 / Verify your email",
-    html: `<p>欢迎使用 ListLocal！</p><p>点击下面的链接验证邮箱（24 小时内有效）：</p><p><a href="${link}">${link}</a></p><p>如果不是你本人注册，请忽略这封邮件。</p>`,
+    subject: "Verify your ListLocal email",
+    html: `<p>Welcome to ListLocal.</p><p>Click the link below to verify your email. It expires in 24 hours.</p><p><a href="${link}">${link}</a></p><p>If you did not sign up, ignore this email.</p>`,
     devLink: link,
   });
 }

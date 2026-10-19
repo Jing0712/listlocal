@@ -9,13 +9,13 @@ export function ResendButton() {
   return (
     <div className="space-y-2">
       <button
-        className="btn-ghost"
+        className="btn-line"
         disabled={busy}
         onClick={async () => {
           setBusy(true);
           try {
             await api("/api/auth/resend", { method: "POST" });
-            setMsg("已重新发送，请查收。");
+            setMsg("Sent. Check your inbox.");
           } catch (e) {
             setMsg((e as Error).message);
           } finally {
@@ -23,7 +23,7 @@ export function ResendButton() {
           }
         }}
       >
-        重新发送验证邮件
+        Resend verification email
       </button>
       {msg && <p className="text-sm text-muted">{msg}</p>}
     </div>

@@ -11,8 +11,8 @@ export type PhraseRule = {
   patterns: string[];
   severity: Severity;
   severityByField?: Partial<Record<FieldKind, Severity>>;
-  messageZh: string;
-  fixZh: string;
+  message: string;
+  fix: string;
   source: SourceId;
 };
 
@@ -40,8 +40,8 @@ export const PHRASE_RULES: PhraseRule[] = [
       "covid(?:-19)?",
     ],
     severity: "error",
-    messageZh: "疑似医疗或疾病宣称。在美国，宣称能治疗、预防疾病的产品会被当作药品监管，Amazon 会下架这类 listing。",
-    fixZh: "改成描述产品本身的功能和使用感受，例如把 \"relieves back pain\" 改成 \"ergonomic support for long hours of sitting\"。",
+    message: "Looks like a medical or disease claim. In the US, a product that claims to treat or prevent disease is regulated as a drug, and Amazon removes these listings.",
+    fix: "Describe what the product does instead, e.g. change \"relieves back pain\" to \"ergonomic support for long hours of sitting\".",
     source: "fdaCosmeticOrDrug",
   },
   {
@@ -58,8 +58,8 @@ export const PHRASE_RULES: PhraseRule[] = [
       "germ[- ]free",
     ],
     severity: "error",
-    messageZh: "抗菌、杀菌、消毒类宣称在美国属于农药宣称（需要 EPA 注册），Amazon 会按农药政策拦截。",
-    fixZh: "删除抗菌、消毒的说法；如果材料本身确实经过处理，只能如实描述处理是为了保护产品本身，并先确认是否符合 EPA 的 treated article 豁免。",
+    message: "Antibacterial, germ-killing and disinfecting claims are pesticide claims in the US (EPA registration required). Amazon blocks them under its pesticide policy.",
+    fix: "Remove the claim. If the material really is treated, you may only say the treatment protects the product itself, and only if it qualifies for the EPA treated-article exemption.",
     source: "epaTreatedArticles",
   },
   {
@@ -73,8 +73,8 @@ export const PHRASE_RULES: PhraseRule[] = [
       "risk[- ]free",
     ],
     severity: "error",
-    messageZh: "listing 文案里不允许写退款或保证类承诺。",
-    fixZh: "删掉这句话；售后政策请写在 Amazon 指定的位置，而不是标题和五点描述里。",
+    message: "Refund and guarantee promises are not allowed in listing copy.",
+    fix: "Remove it. Put warranty or return terms in the fields Amazon provides for them, not in the title or bullets.",
     source: "amazonBullets",
   },
   {
@@ -94,8 +94,8 @@ export const PHRASE_RULES: PhraseRule[] = [
     ],
     severity: "warning",
     severityByField: { title: "error", searchTerms: "error" },
-    messageZh: "促销用语或主观排名（例如 best seller、#1、free shipping）不能出现在标题和后台关键词里，五点描述里也不建议写。",
-    fixZh: "换成可以证实的具体卖点，例如材质、尺寸、适用场景。",
+    message: "Promotional words and rankings (best seller, #1, free shipping) are not allowed in the title or search terms, and are discouraged in bullets.",
+    fix: "Replace them with specific, provable benefits such as material, size or use case.",
     source: "amazonSearchTerms",
   },
   {
@@ -111,16 +111,16 @@ export const PHRASE_RULES: PhraseRule[] = [
       "green product",
     ],
     severity: "warning",
-    messageZh: "笼统的环保宣称（例如 eco-friendly、non-toxic）在 FTC 指南下需要具体限定并有证据支持，Amazon 也会限制这类词。",
-    fixZh: "改成具体、可证实的说法，例如 \"made with 30% recycled PET\"，并保留证明材料。",
+    message: "Broad environmental claims (eco-friendly, non-toxic) must be specific and backed by evidence under the FTC Green Guides, and Amazon restricts them.",
+    fix: "Make it specific and provable, e.g. \"made with 30% recycled PET\", and keep the evidence on file.",
     source: "ftcGreenGuides",
   },
   {
     id: "bamboo-soy-claim",
     patterns: ["made (?:from|of) bamboo", "bamboo (?:fabric|fiber|viscose)", "made (?:from|of) soy"],
     severity: "warning",
-    messageZh: "\"made from bamboo\" 这类纺织品宣称经常不准确（多数其实是 rayon/viscose），Amazon 风格指南把它列为禁用表述。",
-    fixZh: "按实际成分写，例如 \"rayon made from bamboo\"，并确认面料成分标签一致。",
+    message: "Textile claims like \"made from bamboo\" are usually inaccurate (most are rayon or viscose), and Amazon's style guide bans the phrasing.",
+    fix: "State the actual fiber, e.g. \"rayon made from bamboo\", matching the fabric content label.",
     source: "amazonBullets",
   },
 ];

@@ -6,35 +6,56 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   const { checkout } = await searchParams;
   const user = (await currentUser())!;
   const q = quotaOf(user);
+  const isPro = q.plan === "pro";
 
   return (
-    <div className="mx-auto max-w-xl space-y-6">
-      <h1 className="text-2xl font-semibold">账户</h1>
-      {checkout === "success" && user.plan !== "pro" && (
-        <p className="rounded-lg bg-amber-50 p-3 text-sm text-warn">
-          付款成功，正在等待 Stripe 确认（通常几秒钟）。请稍后刷新页面。
+    <div className="mx-auto max-w-3xl space-y-4">
+      <h1 className="text-2xl font-extrabold">Plan and billing</h1>
+
+      {checkout === "success" && !isPro && (
+        <p className="rounded-xl bg-amber-50 px-4 py-3 text-sm font-semibold text-warn">
+          Payment received. Waiting for Stripe to confirm, which usually takes a few seconds. Refresh this page in a moment.
         </p>
       )}
-      {checkout === "success" && user.plan === "pro" && <p className="rounded-lg bg-green-50 p-3 text-sm text-ok">升级成功，欢迎使用 Pro！</p>}
-      {checkout === "cancelled" && <p className="rounded-lg bg-stone-100 p-3 text-sm text-muted">已取消付款，没有扣费。</p>}
+      {checkout === "success" && isPro && <p className="rounded-xl bg-green-50 px-4 py-3 text-sm font-semibold text-ok">You are on Pro. Enjoy unlimited listings.</p>}
+      {checkout === "cancelled" && <p className="rounded-xl bg-white px-4 py-3 text-sm text-muted">Checkout cancelled. You were not charged.</p>}
 
-      <div className="card space-y-2 text-sm">
-        <p><span className="text-muted">邮箱：</span>{user.email}</p>
-        <p><span className="text-muted">套餐：</span>{q.plan === "pro" ? "Pro（无限生成）" : "免费版"}</p>
-        <p>
-          <span className="text-muted">已生成：</span>
-          {q.used} 个{q.limit !== null && `（免费额度 ${q.limit} 个，剩余 ${q.remaining} 个）`}
-        </p>
-        {user.subscriptionStatus && <p><span className="text-muted">订阅状态：</span>{user.subscriptionStatus}</p>}
-      </div>
+      <div className="grid gap-4 md:grid-cols-2">
+        <section className="panel space-y-3">
+          <p className="text-sm text-muted">Current plan</p>
+          <p className="text-3xl font-extrabold text-tao">{isPro ? "Pro" : "Free"}</p>
+          <dl className="space-y-1 text-sm">
+            <div className="flex justify-between"><dt className="text-muted">Email</dt><dd>{user.email}</dd></div>
+            <div className="flex justify-between">
+              <dt className="text-muted">Listings created</dt>
+              <dd>{q.used}{q.limit !== null && ` of ${q.limit} free`}</dd>
+            </div>
+            {user.subscriptionStatus && (
+              <div className="flex justify-between"><dt className="text-muted">Subscription</dt><dd>{user.subscriptionStatus}</dd></div>
+            )}
+          </dl>
+        </section>
 
-      <div className="card space-y-3">
-        <h2 className="font-semibold">{q.plan === "pro" ? "管理订阅" : "升级 Pro · $19/月"}</h2>
-        <p className="text-sm text-muted">
-          {q.plan === "pro" ? "可以在 Stripe 页面查看账单或取消订阅。" : "无限生成 listing。付款在 Stripe 完成，本站不保存任何银行卡信息。"}
-        </p>
-        <BillingButtons isPro={q.plan === "pro"} hasCustomer={Boolean(user.stripeCustomerId)} />
-        <p className="hint">测试模式：可以用卡号 4242 4242 4242 4242、任意未来日期和任意 CVC。</p>
+        <section className={`panel space-y-3 ${isPro ? "" : "ring-2 ring-tao"}`}>
+          {isPro ? (
+            <>
+              <p className="text-lg font-extrabold">Manage your subscription</p>
+              <p className="text-sm text-muted">See invoices, change your card or cancel on Stripe&apos;s billing page.</p>
+            </>
+          ) : (
+            <>
+              <p className="text-lg font-extrabold">Upgrade to Pro</p>
+              <p className="text-tao">
+                <span className="text-lg font-bold">$</span>
+                <span className="text-5xl font-extrabold">19</span>
+                <span className="font-semibold text-muted"> / month</span>
+              </p>
+              <p className="text-sm text-muted">Unlimited listings. Payment is handled by Stripe; we never see your card.</p>
+            </>
+          )}
+          <BillingButtons isPro={isPro} hasCustomer={Boolean(user.stripeCustomerId)} />
+          <p className="field-hint">Test mode: use card 4242 4242 4242 4242, any future date and any CVC.</p>
+        </section>
       </div>
     </div>
   );

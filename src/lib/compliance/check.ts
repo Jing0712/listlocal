@@ -75,8 +75,8 @@ function checkTitle(title: string, ctx: CheckContext, out: Issue[]) {
       severity: "error",
       field: "title",
       match: `${len} chars`,
-      messageZh: `标题有 ${len} 个字符，超过 Amazon 规定的 ${LIMITS.titleMaxChars} 个字符上限（部分类目更短）。`,
-      fixZh: "删掉重复和次要的词，把最重要的信息放在前 80 个字符。",
+      message: `The title is ${len} characters. Amazon allows at most ${LIMITS.titleMaxChars} (some categories allow fewer).`,
+      fix: "Cut repeated and secondary words, and keep the key facts in the first 80 characters.",
       source: source("amazonTitle2025"),
     });
   }
@@ -86,8 +86,8 @@ function checkTitle(title: string, ctx: CheckContext, out: Issue[]) {
       severity: "error",
       field: "title",
       match: "",
-      messageZh: "标题为空。",
-      fixZh: "补上标题。",
+      message: "The title is empty.",
+      fix: "Add a title.",
       source: null,
     });
   }
@@ -100,8 +100,8 @@ function checkTitle(title: string, ctx: CheckContext, out: Issue[]) {
       severity: "error",
       field: "title",
       match: badChars.join(" "),
-      messageZh: `标题里出现了 Amazon 禁止的特殊字符：${badChars.join(" ")}（品牌名本身包含的除外）。`,
-      fixZh: "删除这些字符，需要分隔时可以用逗号、竖线或短横线。",
+      message: `The title uses characters Amazon does not allow: ${badChars.join(" ")} (unless they are part of your brand name).`,
+      fix: "Remove them. Use commas, pipes or hyphens to separate phrases.",
       source: source("amazonTitle2025"),
     });
   }
@@ -121,8 +121,8 @@ function checkTitle(title: string, ctx: CheckContext, out: Issue[]) {
         severity: "error",
         field: "title",
         match: `${word} ×${n}`,
-        messageZh: `"${word}" 在标题里出现了 ${n} 次。Amazon 要求同一个词（含单复数）最多出现 2 次。`,
-        fixZh: "合并重复的词，把多出来的关键词移到后台搜索词里。",
+        message: `"${word}" appears ${n} times in the title. Amazon allows any word (including its plural) at most twice.`,
+        fix: "Merge the repeats and move extra keywords to the backend search terms.",
         source: source("amazonTitle2025"),
       });
     }
@@ -136,8 +136,8 @@ function checkBullets(bullets: string[], out: Issue[]) {
       severity: "error",
       field: "bullets",
       match: `${bullets.length} bullets`,
-      messageZh: `只有 ${bullets.length} 条五点描述，至少需要 ${LIMITS.bulletsMin} 条。`,
-      fixZh: "补充材质、尺寸、使用场景、包装清单等信息。",
+      message: `Only ${bullets.length} bullet points. Amazon expects at least ${LIMITS.bulletsMin}.`,
+      fix: "Add bullets on materials, size, use cases or what is in the box.",
       source: source("amazonBullets"),
     });
   }
@@ -147,8 +147,8 @@ function checkBullets(bullets: string[], out: Issue[]) {
       severity: "warning",
       field: "bullets",
       match: `${bullets.length} bullets`,
-      messageZh: `有 ${bullets.length} 条五点描述，第三方卖家最多显示 ${LIMITS.bulletsMax} 条。`,
-      fixZh: "合并或删除多余的条目。",
+      message: `${bullets.length} bullet points. Third-party sellers get at most ${LIMITS.bulletsMax} displayed.`,
+      fix: "Merge or remove the extra bullets.",
       source: source("amazonBullets"),
     });
   }
@@ -163,8 +163,8 @@ function checkBullets(bullets: string[], out: Issue[]) {
         severity: "error",
         field,
         match: `${len} chars`,
-        messageZh: `第 ${i + 1} 条太短（${len} 个字符）。`,
-        fixZh: "写成完整的卖点，至少一句话。",
+        message: `Bullet ${i + 1} is too short (${len} characters).`,
+        fix: "Write a full selling point of at least one sentence.",
         source: source("amazonBullets"),
       });
     }
@@ -174,8 +174,8 @@ function checkBullets(bullets: string[], out: Issue[]) {
         severity: "warning",
         field,
         match: `${len} chars`,
-        messageZh: `第 ${i + 1} 条有 ${len} 个字符，建议控制在 ${LIMITS.bulletMaxChars} 个以内，移动端才显示得完整。`,
-        fixZh: "删掉修饰语，保留一个核心卖点。",
+        message: `Bullet ${i + 1} is ${len} characters. Keep it under ${LIMITS.bulletMaxChars} so it shows in full on mobile.`,
+        fix: "Cut the filler and keep one core benefit.",
         source: source("amazonBullets"),
       });
     }
@@ -187,8 +187,8 @@ function checkBullets(bullets: string[], out: Issue[]) {
         severity: "error",
         field,
         match: (emoji ?? symbol)![0],
-        messageZh: `第 ${i + 1} 条含有表情符号或特殊符号，Amazon 不允许。`,
-        fixZh: "删掉符号，用文字表达。",
+        message: `Bullet ${i + 1} contains an emoji or symbol, which Amazon does not allow.`,
+        fix: "Remove the symbol and say it in words.",
         source: source("amazonBullets"),
       });
     }
@@ -199,8 +199,8 @@ function checkBullets(bullets: string[], out: Issue[]) {
         severity: "error",
         field,
         match: placeholder[0],
-        messageZh: `第 ${i + 1} 条含有占位文字 "${placeholder[0]}"。`,
-        fixZh: "换成真实内容。",
+        message: `Bullet ${i + 1} contains placeholder text "${placeholder[0]}".`,
+        fix: "Replace it with real product information.",
         source: source("amazonBullets"),
       });
     }
@@ -210,8 +210,8 @@ function checkBullets(bullets: string[], out: Issue[]) {
         severity: "warning",
         field,
         match: b.slice(0, 40),
-        messageZh: `第 ${i + 1} 条有连续的全大写单词，Amazon 风格指南不建议全大写。`,
-        fixZh: "开头的小标题用首字母大写即可，例如 \"Durable Material:\"。",
+        message: `Bullet ${i + 1} has a run of ALL CAPS words, which Amazon's style guide discourages.`,
+        fix: "Use Title Case for the bullet header, e.g. \"Durable Material:\".",
         source: source("amazonBullets"),
       });
     }
@@ -222,8 +222,8 @@ function checkBullets(bullets: string[], out: Issue[]) {
         severity: "warning",
         field,
         match: b.slice(0, 40),
-        messageZh: `第 ${i + 1} 条和第 ${seen.get(norm)! + 1} 条重复。`,
-        fixZh: "每条写一个不同的卖点。",
+        message: `Bullet ${i + 1} repeats bullet ${seen.get(norm)! + 1}.`,
+        fix: "Give each bullet a different selling point.",
         source: source("amazonBullets"),
       });
     } else if (norm) {
@@ -240,8 +240,8 @@ function checkSearchTerms(terms: string, title: string, ctx: CheckContext, out: 
       severity: "error",
       field: "searchTerms",
       match: `${bytes} bytes`,
-      messageZh: `后台搜索词有 ${bytes} 字节，超过 ${LIMITS.searchTermsMaxBytes} 字节上限。超出时 Amazon 可能整段都不索引。`,
-      fixZh: "删除重复词、标点和标题里已经有的词。",
+      message: `Search terms are ${bytes} bytes, over the ${LIMITS.searchTermsMaxBytes}-byte limit. Amazon may ignore all of them when the limit is exceeded.`,
+      fix: "Remove repeated words, punctuation and words already in the title.",
       source: source("amazonSearchTerms"),
     });
   }
@@ -253,8 +253,8 @@ function checkSearchTerms(terms: string, title: string, ctx: CheckContext, out: 
       severity: "info",
       field: "searchTerms",
       match: dupes.slice(0, 5).join(", "),
-      messageZh: "后台搜索词里有重复的词，浪费字节。",
-      fixZh: "每个词只写一次。",
+      message: "Some search terms repeat, which wastes bytes.",
+      fix: "List each word once.",
       source: source("amazonSearchTerms"),
     });
   }
@@ -266,8 +266,8 @@ function checkSearchTerms(terms: string, title: string, ctx: CheckContext, out: 
       severity: "info",
       field: "searchTerms",
       match: overlap.slice(0, 6).join(", "),
-      messageZh: `后台搜索词里有 ${overlap.length} 个词已经在标题中出现，不会带来额外曝光。`,
-      fixZh: "换成同义词、使用场景或常见拼写变体。",
+      message: `${overlap.length} search terms already appear in the title, so they add no extra reach.`,
+      fix: "Use synonyms, use cases or common alternate spellings instead.",
       source: source("amazonSearchTerms"),
     });
   }
@@ -277,8 +277,8 @@ function checkSearchTerms(terms: string, title: string, ctx: CheckContext, out: 
       severity: "info",
       field: "searchTerms",
       match: ctx.ownBrand,
-      messageZh: "后台搜索词里写了自己的品牌名，品牌已经被索引，这样浪费字节。",
-      fixZh: "删掉品牌名。",
+      message: "Your own brand is in the search terms. Amazon already indexes it, so it wastes bytes.",
+      fix: "Remove the brand name.",
       source: source("amazonSearchTerms"),
     });
   }
@@ -295,8 +295,8 @@ function checkPhraseRules(f: FieldEntry, out: Issue[]) {
         severity,
         field: f.name,
         match: m[0],
-        messageZh: rule.messageZh,
-        fixZh: rule.fixZh,
+        message: rule.message,
+        fix: rule.fix,
         source: source(rule.source),
       });
     }
@@ -318,8 +318,8 @@ function checkContactInfo(f: FieldEntry, out: Issue[]) {
       severity: "error",
       field: f.name,
       match: m[0],
-      messageZh: "listing 里不能出现网址、邮箱、电话等联系方式。",
-      fixZh: "删除联系方式，买家沟通请走 Amazon 站内信。",
+      message: "Listings cannot contain URLs, email addresses or phone numbers.",
+      fix: "Remove it. Buyers contact you through Amazon messaging.",
       source: source("amazonBullets"),
     });
   }
@@ -333,8 +333,8 @@ function checkUntranslated(f: FieldEntry, out: Issue[]) {
       severity: "error",
       field: f.name,
       match: m[0],
-      messageZh: "美国站 listing 里还有中文没有翻译。",
-      fixZh: "翻译成英文或删除。",
+      message: "There is untranslated Chinese text in a US listing.",
+      fix: "Translate it into English or remove it.",
       source: null,
     });
   }
@@ -354,11 +354,11 @@ function checkBrands(f: FieldEntry, ctx: CheckContext, out: Issue[]) {
       severity: f.kind === "searchTerms" || userListed ? "error" : "warning",
       field: f.name,
       match: m[0],
-      messageZh:
+      message:
         f.kind === "searchTerms"
-          ? `后台搜索词里出现了其他品牌 "${m[0]}"，可能导致 listing 被下架。`
-          : `出现了其他品牌 "${m[0]}"。只有在如实说明兼容性（例如 "compatible with iPhone 15"）时才可能被允许，否则有侵权风险。`,
-      fixZh: "删掉品牌名；如果是兼容配件，只写一次 \"compatible with ...\"，且不能出现在标题开头。",
+          ? `Another company's brand "${m[0]}" is in your search terms. This can get the listing suppressed.`
+          : `Another company's brand "${m[0]}" appears. It is only acceptable as an honest compatibility statement (e.g. "compatible with iPhone 15"); otherwise it is an IP risk.`,
+      fix: "Remove it. For accessories, say \"compatible with ...\" once, and never at the start of the title.",
       source: f.kind === "searchTerms" ? source("amazonSearchTerms") : null,
     });
   }
@@ -397,8 +397,8 @@ export function checkUnsupportedNumbers(fields: FieldEntry[], sourceText: string
         severity: "warning",
         field: f.name,
         match: bad.join(", "),
-        messageZh: `数字 ${bad.join(", ")} 在你提供的产品信息里找不到（也不是单位换算的结果），可能是 AI 编造的参数。`,
-        fixZh: "请核对实物参数；如果不确定就删掉，夸大的参数会招来差评和退货。",
+        message: `${bad.join(", ")} does not appear in your product info and is not a unit conversion of it. The AI may have invented this spec.`,
+        fix: "Check it against the real product. If unsure, remove it: overstated specs lead to returns and bad reviews.",
         source: null,
       });
     }

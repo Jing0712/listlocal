@@ -17,6 +17,6 @@ export async function rateLimit(key: string, limit: number, windowSec: number) {
   );
   if (doc && doc.count > limit) {
     const retryAfter = windowStart + windowSec - Math.floor(Date.now() / 1000);
-    throw new HttpError(429, `操作太频繁，请 ${retryAfter} 秒后再试`, { retryAfterSec: retryAfter });
+    throw new HttpError(429, `Too many requests. Try again in ${retryAfter} seconds.`, { retryAfterSec: retryAfter });
   }
 }

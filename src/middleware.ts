@@ -10,7 +10,7 @@ export async function middleware(req: NextRequest) {
   const userId = await verifySession(req.cookies.get(SESSION_COOKIE)?.value);
   if (!userId) {
     const url = new URL("/login", req.url);
-    url.searchParams.set("next", req.nextUrl.pathname);
+    url.searchParams.set("next", req.nextUrl.pathname + req.nextUrl.search);
     return NextResponse.redirect(url);
   }
   return NextResponse.next();

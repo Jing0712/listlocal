@@ -8,8 +8,8 @@ import { sendVerificationEmail } from "@/lib/auth/verification";
 import { startSession } from "@/lib/auth/session";
 
 const Body = z.object({
-  email: z.string().trim().toLowerCase().email("邮箱格式不对").max(200),
-  password: z.string().min(8, "密码至少 8 位").max(200),
+  email: z.string().trim().toLowerCase().email("Enter a valid email address").max(200),
+  password: z.string().min(8, "Password must be at least 8 characters").max(200),
 });
 
 export const POST = route(async (req: Request) => {
@@ -30,7 +30,7 @@ export const POST = route(async (req: Request) => {
     });
     userId = res.insertedId;
   } catch (e) {
-    if ((e as { code?: number }).code === 11000) throw new HttpError(409, "这个邮箱已经注册过了，请直接登录");
+    if ((e as { code?: number }).code === 11000) throw new HttpError(409, "This email is already registered. Log in instead.");
     throw e;
   }
 

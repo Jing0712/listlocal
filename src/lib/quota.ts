@@ -28,7 +28,7 @@ export async function reserveGeneration(userId: ObjectId) {
     { returnDocument: "after" },
   );
   if (!res) {
-    throw new HttpError(402, `免费版只能生成 ${freeLimit()} 个 listing，升级 Pro 可无限使用`, { code: "quota_exceeded" });
+    throw new HttpError(402, `The free plan includes ${freeLimit()} listings. Upgrade to Pro for unlimited listings.`, { code: "quota_exceeded" });
   }
 }
 

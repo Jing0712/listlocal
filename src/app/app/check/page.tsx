@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { api } from "@/lib/api-client";
-import { IssueList, IssueSummary } from "@/components/IssueList";
+import { IssueCounts, IssueList } from "@/components/IssueList";
 import type { Issue } from "@/lib/compliance/types";
 
 export default function CheckPage() {
@@ -36,49 +36,53 @@ export default function CheckPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
-        <h1 className="text-2xl font-semibold">检查已有 listing</h1>
-        <p className="text-sm text-muted">把已经上架或准备上架的英文 listing 贴进来，用规则引擎检查。不调用 AI，免费、不占额度。</p>
+        <h1 className="text-2xl font-extrabold">Check a listing</h1>
+        <p className="text-sm text-muted">Paste an English listing you already have. Only the rule engine runs, no AI, so it is free and unlimited.</p>
       </div>
-      <div className="grid gap-6 lg:grid-cols-2">
-        <form onSubmit={submit} className="card space-y-4">
+      <div className="grid gap-4 lg:grid-cols-2">
+        <form onSubmit={submit} className="panel space-y-4">
           <div>
-            <label className="label">标题</label>
-            <input className="input" value={f.title} onChange={set("title")} />
+            <label className="field-label" htmlFor="c-title">Title</label>
+            <input id="c-title" className="field" value={f.title} onChange={set("title")} />
           </div>
           <div>
-            <label className="label">五点描述</label>
-            <textarea className="input min-h-32" value={f.bullets} onChange={set("bullets")} placeholder="每行一条" />
+            <label className="field-label" htmlFor="c-bullets">Bullet points</label>
+            <textarea id="c-bullets" className="field min-h-32" value={f.bullets} onChange={set("bullets")} placeholder="One per line" />
           </div>
           <div>
-            <label className="label">产品描述</label>
-            <textarea className="input min-h-24" value={f.description} onChange={set("description")} />
+            <label className="field-label" htmlFor="c-desc">Description</label>
+            <textarea id="c-desc" className="field min-h-24" value={f.description} onChange={set("description")} />
           </div>
           <div>
-            <label className="label">后台搜索词</label>
-            <textarea className="input min-h-16" value={f.searchTerms} onChange={set("searchTerms")} />
+            <label className="field-label" htmlFor="c-terms">Backend search terms</label>
+            <textarea id="c-terms" className="field min-h-16" value={f.searchTerms} onChange={set("searchTerms")} />
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label className="label">你的品牌名</label>
-              <input className="input" value={f.ownBrand} onChange={set("ownBrand")} />
+              <label className="field-label" htmlFor="c-brand">Your brand name</label>
+              <input id="c-brand" className="field" value={f.ownBrand} onChange={set("ownBrand")} />
             </div>
             <div>
-              <label className="label">不能出现的品牌</label>
-              <input className="input" value={f.avoidBrands} onChange={set("avoidBrands")} placeholder="逗号分隔" />
+              <label className="field-label" htmlFor="c-avoid">Brands to keep out</label>
+              <input id="c-avoid" className="field" value={f.avoidBrands} onChange={set("avoidBrands")} placeholder="Separated by commas" />
             </div>
           </div>
-          <button className="btn w-full" disabled={busy}>{busy ? "检查中…" : "开始检查"}</button>
-          {error && <p className="text-sm text-bad">{error}</p>}
+          <button className="btn-tao w-full py-3" disabled={busy}>{busy ? "Checking…" : "Check listing"}</button>
+          {error && <p className="text-sm font-semibold text-bad">{error}</p>}
         </form>
-        <div className="card space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold">结果</h2>
-            {issues && <IssueSummary issues={issues} />}
-          </div>
-          {issues ? <IssueList issues={issues} /> : <p className="text-sm text-muted">检查结果会显示在这里。</p>}
-        </div>
+        <section className="panel space-y-4 lg:self-start">
+          <h2 className="text-lg font-extrabold">Compliance report</h2>
+          {issues ? (
+            <>
+              <IssueCounts issues={issues} />
+              <IssueList issues={issues} />
+            </>
+          ) : (
+            <p className="rounded-xl bg-page px-4 py-10 text-center text-sm text-muted">Paste a listing and run the check. Results show up here.</p>
+          )}
+        </section>
       </div>
     </div>
   );

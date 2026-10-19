@@ -60,7 +60,7 @@ export const POST = route(async (req: Request) => {
     await refundGeneration(user._id);
     console.error(JSON.stringify({ level: "error", event: "listing.failed", listingId: insertedId.toHexString(), message }));
     if (e instanceof AiError) {
-      throw new HttpError(502, "AI 服务暂时出错，这次不计入额度，请稍后重试", { id: insertedId.toHexString(), detail: message });
+      throw new HttpError(502, "The AI service failed. This attempt was not counted against your quota; please try again.", { id: insertedId.toHexString(), detail: message });
     }
     throw e;
   }

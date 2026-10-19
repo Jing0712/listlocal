@@ -3,13 +3,13 @@
 export function LogoutButton() {
   return (
     <button
-      className="text-muted hover:text-ink"
+      className="hover:text-tao"
       onClick={async () => {
         await fetch("/api/auth/logout", { method: "POST" });
         window.location.href = "/";
       }}
     >
-      退出
+      Log out
     </button>
   );
 }

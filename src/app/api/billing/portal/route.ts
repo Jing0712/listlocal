@@ -7,7 +7,7 @@ import { stripe } from "@/lib/stripe";
 /** Stripe-hosted page where users can cancel or update their subscription. */
 export const POST = route(async () => {
   const user = await requireUser();
-  if (!user.stripeCustomerId) throw new HttpError(400, "还没有订阅记录");
+  if (!user.stripeCustomerId) throw new HttpError(400, "No subscription found for this account");
   const portal = await stripe().billingPortal.sessions.create({
     customer: user.stripeCustomerId,
     return_url: `${appUrl()}/app/account`,

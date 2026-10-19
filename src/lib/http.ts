@@ -23,12 +23,12 @@ export function route<A extends unknown[]>(handler: (...args: A) => Promise<Resp
       if (e instanceof ZodError) {
         const first = e.issues[0];
         return NextResponse.json(
-          { error: first ? `${first.path.join(".") || "输入"}：${first.message}` : "输入不合法", requestId },
+          { error: first ? `${first.path.join(".") || "input"}: ${first.message}` : "Invalid input", requestId },
           { status: 400 },
         );
       }
       console.error(JSON.stringify({ level: "error", requestId, msg: e instanceof Error ? e.message : String(e) }));
-      return NextResponse.json({ error: "服务器出错了，请稍后再试", requestId }, { status: 500 });
+      return NextResponse.json({ error: "Something went wrong on our side. Please try again.", requestId }, { status: 500 });
     }
   };
 }
@@ -37,7 +37,7 @@ export async function readJson(req: Request): Promise<unknown> {
   try {
     return await req.json();
   } catch {
-    throw new HttpError(400, "请求格式不对（需要 JSON）");
+    throw new HttpError(400, "Request body must be JSON");
   }
 }
 

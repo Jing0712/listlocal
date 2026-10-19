@@ -3,12 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api-client";
+import { Logo } from "./Logo";
 
 export function AuthForm({ mode, next }: { mode: "login" | "signup"; next?: string }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const safeNext = next && next.startsWith("/app") ? next : "/app";
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -20,7 +22,6 @@ export function AuthForm({ mode, next }: { mode: "login" | "signup"; next?: stri
         window.location.href = "/verify-email";
       } else {
         const r = await api<{ emailVerified: boolean }>("/api/auth/login", { body: { email, password } });
-        const safeNext = next && next.startsWith("/app") ? next : "/app";
         window.location.href = r.emailVerified ? safeNext : "/verify-email";
       }
     } catch (err) {
@@ -30,37 +31,48 @@ export function AuthForm({ mode, next }: { mode: "login" | "signup"; next?: stri
   }
 
   return (
-    <form onSubmit={submit} className="card mx-auto max-w-sm space-y-4">
-      <h1 className="text-xl font-semibold">{mode === "signup" ? "注册 ListLocal" : "登录"}</h1>
-      <div>
-        <label className="label" htmlFor="email">邮箱</label>
-        <input id="email" className="input" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+    <div className="mx-auto grid max-w-4xl overflow-hidden rounded-[20px] bg-white md:grid-cols-2">
+      <div className="tao-gradient hidden flex-col justify-between p-8 text-white md:flex">
+        <p className="text-3xl font-extrabold leading-tight">Write it once in Chinese. Sell it in English.</p>
+        <ul className="space-y-2 text-sm text-white/90">
+          <li>Listings written for American shoppers</li>
+          <li>Checked against Amazon and US ad rules</li>
+          <li>Every finding links to its source</li>
+        </ul>
       </div>
-      <div>
-        <label className="label" htmlFor="password">密码</label>
-        <input
-          id="password"
-          className="input"
-          type="password"
-          autoComplete={mode === "signup" ? "new-password" : "current-password"}
-          minLength={mode === "signup" ? 8 : undefined}
-          required
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        {mode === "signup" && <p className="hint mt-1">至少 8 位</p>}
-      </div>
-      {error && <p className="rounded-lg bg-red-50 p-2 text-sm text-bad">{error}</p>}
-      <button className="btn w-full" disabled={busy}>
-        {busy ? "请稍候…" : mode === "signup" ? "注册并发送验证邮件" : "登录"}
-      </button>
-      <p className="text-center text-sm text-muted">
-        {mode === "signup" ? (
-          <>已经有账号？<Link className="underline" href="/login">登录</Link></>
-        ) : (
-          <>还没有账号？<Link className="underline" href="/signup">免费注册</Link></>
-        )}
-      </p>
-    </form>
+      <form onSubmit={submit} className="space-y-4 p-8">
+        <Logo />
+        <h1 className="text-2xl font-extrabold">{mode === "signup" ? "Create your account" : "Log in"}</h1>
+        <div>
+          <label className="field-label" htmlFor="email">Email</label>
+          <input id="email" className="field" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+        </div>
+        <div>
+          <label className="field-label" htmlFor="password">Password</label>
+          <input
+            id="password"
+            className="field"
+            type="password"
+            autoComplete={mode === "signup" ? "new-password" : "current-password"}
+            minLength={mode === "signup" ? 8 : undefined}
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          {mode === "signup" && <p className="field-hint">At least 8 characters</p>}
+        </div>
+        {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-bad">{error}</p>}
+        <button className="btn-tao w-full py-3 text-base" disabled={busy}>
+          {busy ? "One moment…" : mode === "signup" ? "Sign up and verify email" : "Log in"}
+        </button>
+        <p className="text-center text-sm text-muted">
+          {mode === "signup" ? (
+            <>Already have an account? <Link className="font-semibold text-tao" href="/login">Log in</Link></>
+          ) : (
+            <>New to ListLocal? <Link className="font-semibold text-tao" href="/signup">Sign up free</Link></>
+          )}
+        </p>
+      </form>
+    </div>
   );
 }

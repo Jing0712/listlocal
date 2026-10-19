@@ -31,7 +31,7 @@ export async function currentUser(): Promise<UserDoc | null> {
 /** For API routes: 401 if not logged in, 403 if email not verified (unless allowed). */
 export async function requireUser(opts: { allowUnverified?: boolean } = {}): Promise<UserDoc> {
   const user = await currentUser();
-  if (!user) throw new HttpError(401, "请先登录");
-  if (!user.emailVerified && !opts.allowUnverified) throw new HttpError(403, "请先验证邮箱");
+  if (!user) throw new HttpError(401, "Log in first");
+  if (!user.emailVerified && !opts.allowUnverified) throw new HttpError(403, "Verify your email first");
   return user;
 }

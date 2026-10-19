@@ -1,42 +1,144 @@
 @import "tailwindcss";
 
+/*
+ * ListLocal visual system, after Taobao's marketplace language:
+ * orange gradient search bar, white rounded panels on a grey page,
+ * dense layout, orange pill actions, big bold numbers.
+ */
 @theme {
-  --color-ink: #1c1917;
-  --color-paper: #fbfaf7;
-  --color-line: #e7e3da;
-  --color-muted: #6b665c;
-  --color-accent: #c2410c;
-  --color-accent-soft: #fff1e6;
-  --color-ok: #15803d;
-  --color-warn: #b45309;
-  --color-bad: #b91c1c;
-  --font-sans: "Inter", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+  --color-tao: #ff5000;
+  --color-tao-deep: #ff2a00;
+  --color-tao-soft: #fff1e8;
+  --color-tao-line: #ffd2b8;
+  --color-page: #f4f4f4;
+  --color-ink: #222222;
+  --color-muted: #8c8c8c;
+  --color-line: #ebebeb;
+  --color-ok: #12a150;
+  --color-warn: #d48806;
+  --color-bad: #d9363e;
+  --font-sans: var(--font-figtree), "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --radius-panel: 14px;
 }
 
 html,
 body {
-  background: var(--color-paper);
+  background: var(--color-page);
   color: var(--color-ink);
 }
 
-.card {
-  @apply rounded-xl border border-line bg-white p-5;
+:focus-visible {
+  outline: 2px solid var(--color-tao);
+  outline-offset: 2px;
 }
-.btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-lg bg-ink px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50;
+
+@layer components {
+  .panel {
+    background: #fff;
+    border-radius: var(--radius-panel);
+    padding: 20px;
+  }
+  .tao-gradient {
+    background: linear-gradient(90deg, var(--color-tao) 0%, var(--color-tao-deep) 100%);
+  }
+  /* The orange pill: Taobao's primary action */
+  .btn-tao {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 999px;
+    padding: 10px 22px;
+    font-weight: 700;
+    color: #fff;
+    background: linear-gradient(90deg, var(--color-tao) 0%, var(--color-tao-deep) 100%);
+    transition: filter 0.15s;
+  }
+  .btn-tao:hover {
+    filter: brightness(1.06);
+  }
+  .btn-tao:disabled {
+    filter: grayscale(0.4);
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  .btn-line {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border-radius: 999px;
+    padding: 8px 18px;
+    font-weight: 600;
+    color: var(--color-tao);
+    background: #fff;
+    border: 1px solid var(--color-tao);
+  }
+  .btn-line:hover {
+    background: var(--color-tao-soft);
+  }
+  .btn-quiet {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 13px;
+    color: var(--color-ink);
+    background: var(--color-page);
+  }
+  .btn-quiet:hover {
+    background: #eaeaea;
+  }
+  .field {
+    width: 100%;
+    border-radius: 10px;
+    border: 1px solid var(--color-line);
+    background: #fff;
+    padding: 10px 12px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .field:focus {
+    border-color: var(--color-tao);
+  }
+  .field-label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 700;
+  }
+  .field-hint {
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--color-muted);
+  }
+  /* Small outlined tag, like Taobao's 包邮 / 退货宝 labels */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--color-tao-line);
+    color: var(--color-tao);
+    border-radius: 4px;
+    padding: 0 5px;
+    font-size: 11px;
+    line-height: 18px;
+    white-space: nowrap;
+  }
+  .tag-ok {
+    border-color: #b7e4c7;
+    color: var(--color-ok);
+  }
+  .tag-bad {
+    border-color: #f5c2c4;
+    color: var(--color-bad);
+  }
 }
-.btn-accent {
-  @apply inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50;
-}
-.btn-ghost {
-  @apply inline-flex items-center justify-center gap-2 rounded-lg border border-line bg-white px-3 py-1.5 text-sm transition hover:bg-stone-50 disabled:opacity-50;
-}
-.input {
-  @apply w-full rounded-lg border border-line bg-white px-3 py-2 text-sm outline-none transition focus:border-ink;
-}
-.label {
-  @apply mb-1 block text-sm font-medium;
-}
-.hint {
-  @apply text-xs text-muted;
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
 }

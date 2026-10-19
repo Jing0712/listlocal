@@ -20,9 +20,9 @@ const good = {
   ],
   description: "A cup that folds flat when you don't need it.",
   searchTerms: "foldable mug backpacking drinkware",
-  riskFlags: [{ field: "description", text: "抗菌", reasonZh: "属于农药宣称" }],
-  notesZh: ["容量换算成 oz"],
-  missingInfoZh: [],
+  riskFlags: [{ field: "description", text: "抗菌", reason: "属于农药宣称" }],
+  notes: ["容量换算成 oz"],
+  missingInfo: [],
 };
 
 function fakeClient(outputs: Array<unknown | Error>): MessagesClient & { calls: Record<string, unknown>[] } {

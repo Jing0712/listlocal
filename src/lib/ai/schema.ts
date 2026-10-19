@@ -2,9 +2,9 @@ import { z } from "zod";
 
 /** What the seller submits. Limits keep prompts bounded and requests under Vercel's body limit. */
 export const ProductInputSchema = z.object({
-  productName: z.string().trim().min(1, "请填写产品名称").max(200),
+  productName: z.string().trim().min(1, "Enter a product name").max(200),
   category: z.string().trim().max(100).default(""),
-  description: z.string().trim().min(10, "产品描述至少 10 个字").max(4000),
+  description: z.string().trim().min(10, "Describe the product in at least 10 characters").max(4000),
   specs: z.string().trim().max(2000).default(""),
   targetCustomer: z.string().trim().max(500).default(""),
   ownBrand: z.string().trim().max(60).default(""),
@@ -29,10 +29,10 @@ export const ModelListingSchema = z.object({
   description: z.string(),
   searchTerms: z.string(),
   riskFlags: z
-    .array(z.object({ field: z.string(), text: z.string(), reasonZh: z.string() }))
+    .array(z.object({ field: z.string(), text: z.string(), reason: z.string() }))
     .default([]),
-  notesZh: z.array(z.string()).default([]),
-  missingInfoZh: z.array(z.string()).default([]),
+  notes: z.array(z.string()).default([]),
+  missingInfo: z.array(z.string()).default([]),
 });
 export type ModelListing = z.infer<typeof ModelListingSchema>;
 
@@ -42,7 +42,7 @@ export const SUBMIT_LISTING_TOOL = {
   description: "Submit the finished US Amazon listing plus notes for the seller.",
   input_schema: {
     type: "object" as const,
-    required: ["title", "bullets", "description", "searchTerms", "riskFlags", "notesZh", "missingInfoZh"],
+    required: ["title", "bullets", "description", "searchTerms", "riskFlags", "notes", "missingInfo"],
     properties: {
       title: { type: "string", description: "Product title, US English, at most 200 characters (aim for 80-150)." },
       bullets: {
@@ -62,23 +62,23 @@ export const SUBMIT_LISTING_TOOL = {
         description: "Claims in the SELLER INPUT that you deliberately left out or softened because they are risky on Amazon US.",
         items: {
           type: "object",
-          required: ["field", "text", "reasonZh"],
+          required: ["field", "text", "reason"],
           properties: {
             field: { type: "string", description: "Where the claim came from, e.g. 'description' or 'specs'." },
             text: { type: "string", description: "The risky claim as the seller wrote it." },
-            reasonZh: { type: "string", description: "Why it is risky, in Simplified Chinese, one sentence." },
+            reason: { type: "string", description: "Why it is risky on Amazon US, one plain-English sentence." },
           },
         },
       },
-      notesZh: {
+      notes: {
         type: "array",
         items: { type: "string" },
-        description: "2-5 short notes in Simplified Chinese explaining key localization choices (tone, units, keywords).",
+        description: "2-5 short plain-English notes for the seller explaining key localization choices (tone, units, keywords).",
       },
-      missingInfoZh: {
+      missingInfo: {
         type: "array",
         items: { type: "string" },
-        description: "Facts a US buyer expects that the seller did not provide (in Simplified Chinese). Never invent them.",
+        description: "Facts a US buyer expects that the seller did not provide, as short questions to the seller. Never invent them.",
       },
     },
   },

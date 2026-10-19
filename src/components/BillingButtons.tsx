@@ -21,19 +21,19 @@ export function BillingButtons({ isPro, hasCustomer }: { isPro: boolean; hasCust
 
   return (
     <div className="space-y-2">
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         {!isPro && (
-          <button className="btn-accent" disabled={busy} onClick={() => go("/api/billing/checkout")}>
-            {busy ? "跳转中…" : "升级 Pro"}
+          <button className="btn-tao" disabled={busy} onClick={() => go("/api/billing/checkout")}>
+            {busy ? "Opening Stripe…" : "Upgrade to Pro"}
           </button>
         )}
         {hasCustomer && (
-          <button className="btn-ghost" disabled={busy} onClick={() => go("/api/billing/portal")}>
-            管理账单
+          <button className="btn-line" disabled={busy} onClick={() => go("/api/billing/portal")}>
+            Open billing page
           </button>
         )}
       </div>
-      {error && <p className="text-sm text-bad">{error}</p>}
+      {error && <p className="text-sm font-semibold text-bad">{error}</p>}
     </div>
   );
 }

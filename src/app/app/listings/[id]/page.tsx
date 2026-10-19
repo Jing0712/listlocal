@@ -5,8 +5,10 @@ import { currentUser } from "@/lib/auth/session";
 import { collections } from "@/lib/db";
 import { utf8Bytes } from "@/lib/compliance/check";
 import { CopyButton } from "@/components/CopyButton";
-import { IssueList, IssueSummary } from "@/components/IssueList";
+import { IssueCounts, IssueList } from "@/components/IssueList";
 import type { Listing } from "@/lib/compliance/types";
+
+const STEP_NAMES: Record<string, string> = { generate: "AI writes listing", check: "Rule check", repair: "AI fixes problems", recheck: "Rule check again" };
 
 export default async function ListingPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -17,113 +19,119 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
   if (!doc) notFound();
 
   const header = (
-    <div className="flex flex-wrap items-end justify-between gap-2">
+    <div className="flex flex-wrap items-end justify-between gap-3">
       <div>
-        <Link href="/app/history" className="text-sm text-muted">← 历史记录</Link>
-        <h1 className="text-2xl font-semibold">{doc.productName}</h1>
-        <p className="text-sm text-muted">{doc.createdAt.toLocaleString("zh-CN", { timeZone: "America/Los_Angeles" })}</p>
+        <Link href="/app/history" className="text-sm text-muted hover:text-tao">Back to history</Link>
+        <h1 className="text-2xl font-extrabold">{doc.productName}</h1>
+        <p className="text-sm text-muted">{doc.createdAt.toLocaleString("en-US", { timeZone: "America/Los_Angeles", dateStyle: "medium", timeStyle: "short" })}</p>
       </div>
-      <Link href="/app" className="btn">再生成一个</Link>
+      <Link href="/app" className="btn-tao">Create another</Link>
     </div>
   );
 
   if (doc.status !== "done" || !doc.result) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-4">
         {header}
-        <div className="card space-y-2">
-          <p className="font-medium text-bad">{doc.status === "running" ? "还在生成中（或上次请求中断了）" : "这次生成失败了，没有扣除额度"}</p>
-          {doc.error && <p className="text-sm text-muted">错误信息：{doc.error}</p>}
+        <div className="panel space-y-3">
+          <p className="text-lg font-bold text-bad">
+            {doc.status === "running" ? "This run did not finish" : "This run failed and was not counted against your quota"}
+          </p>
+          {doc.error && <p className="text-sm text-muted">Error: {doc.error}</p>}
           <Steps steps={doc.steps} />
         </div>
       </div>
     );
   }
 
-  const r = doc.result;
-  const all = listingText(r.final);
+  // Records created before the English switch used *Zh field names.
+  const r = doc.result as typeof doc.result & { notesZh?: string[]; missingInfoZh?: string[] };
+  const notes = r.notes ?? r.notesZh ?? [];
+  const missing = r.missingInfo ?? r.missingInfoZh ?? [];
+  const flags = (r.aiRiskFlags ?? []).map((f) => ({ ...f, reason: f.reason ?? (f as { reasonZh?: string }).reasonZh ?? "" }));
   const draftErrors = r.draftIssues.filter((i) => i.severity === "error").length;
   const finalErrors = r.finalIssues.filter((i) => i.severity === "error").length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {header}
 
-      <div className={`rounded-xl p-4 text-sm ${finalErrors ? "bg-red-50" : "bg-green-50"}`}>
+      <div className={`rounded-[14px] px-5 py-4 ${finalErrors ? "bg-red-50" : "bg-green-50"}`}>
         {finalErrors === 0 ? (
-          <p className="text-ok">
-            ✓ 最终版本通过了全部「必须修改」规则。
-            {r.repaired && ` 初稿有 ${draftErrors} 个必须修改的问题，已自动修正。`}
+          <p className="font-semibold text-ok">
+            Passed every must-fix rule.
+            {r.repaired && draftErrors > 0 && ` The first draft had ${draftErrors} must-fix ${draftErrors === 1 ? "problem" : "problems"}; they were fixed automatically.`}
           </p>
         ) : (
-          <p className="text-bad">还有 {finalErrors} 个必须修改的问题，自动修正没能全部解决，请看下面的说明手动处理。</p>
+          <p className="font-semibold text-bad">
+            {finalErrors} must-fix {finalErrors === 1 ? "problem remains" : "problems remain"} after the automatic fix. See the report on the right before you publish.
+          </p>
         )}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <section className="card space-y-5">
+      <div className="grid gap-4 lg:grid-cols-[1.5fr_1fr]">
+        <section className="panel space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="font-semibold">美国站 listing</h2>
-            <CopyButton text={all} label="复制全部" />
+            <h2 className="text-lg font-extrabold">Your US listing</h2>
+            <CopyButton text={listingText(r.final)} label="Copy all" />
           </div>
-          <Block label="标题" meta={`${[...r.final.title].length} / 200 字符`} text={r.final.title} />
+          <Block label="Title" meter={`${[...r.final.title].length}/200 characters`} text={r.final.title} strong />
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <span className="label mb-0">五点描述</span>
+              <span className="font-bold">Bullet points</span>
               <CopyButton text={r.final.bullets.join("\n")} />
             </div>
             <ul className="space-y-2">
               {r.final.bullets.map((b, i) => (
-                <li key={i} className="rounded-lg bg-stone-50 p-3 text-sm">
-                  {b}
-                  <span className="ml-2 text-xs text-muted">{[...b].length} 字符</span>
+                <li key={i} className="flex gap-3 rounded-xl bg-page p-3 text-sm leading-relaxed">
+                  <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-tao" aria-hidden />
+                  <span className="flex-1">{b}</span>
+                  <span className="shrink-0 text-xs text-muted">{[...b].length}</span>
                 </li>
               ))}
             </ul>
           </div>
-          <Block label="产品描述" meta={`${[...r.final.description].length} 字符`} text={r.final.description} multiline />
-          <Block label="后台搜索词" meta={`${utf8Bytes(r.final.searchTerms)} / 250 字节`} text={r.final.searchTerms} />
+          <Block label="Description" meter={`${[...r.final.description].length} characters`} text={r.final.description} multiline />
+          <Block label="Backend search terms" meter={`${utf8Bytes(r.final.searchTerms)}/250 bytes`} text={r.final.searchTerms} />
         </section>
 
-        <aside className="space-y-6">
-          <section className="card space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="font-semibold">规则检查</h2>
-              <IssueSummary issues={r.finalIssues} />
-            </div>
-            <IssueList issues={r.finalIssues} empty="最终版本没有发现问题" />
+        <aside className="space-y-4">
+          <section className="panel space-y-4">
+            <h2 className="text-lg font-extrabold">Compliance report</h2>
+            <IssueCounts issues={r.finalIssues} />
+            <IssueList issues={r.finalIssues} empty="No problems found in the final listing" />
           </section>
 
-          {r.aiRiskFlags.length > 0 && (
-            <section className="card space-y-3">
-              <h2 className="font-semibold">AI 从你的描述里删掉的风险说法</h2>
-              <p className="hint">这些是 AI 判断的，不是规则引擎的结论，请自己复核。</p>
-              <ul className="space-y-2 text-sm">
-                {r.aiRiskFlags.map((f, i) => (
+          {flags.length > 0 && (
+            <section className="panel space-y-3">
+              <h2 className="text-lg font-extrabold">Claims the AI left out</h2>
+              <p className="text-xs text-muted">The AI judged these risky. This is not a rule result, so review them yourself.</p>
+              <ul className="space-y-3 text-sm">
+                {flags.map((f, i) => (
                   <li key={i}>
-                    <code className="rounded bg-stone-100 px-1">{f.text}</code>
-                    <p className="text-muted">{f.reasonZh}</p>
+                    <span className="tag">{f.text}</span>
+                    <p className="mt-1 text-muted">{f.reason}</p>
                   </li>
                 ))}
               </ul>
             </section>
           )}
 
-          {r.missingInfoZh.length > 0 && (
-            <section className="card space-y-2">
-              <h2 className="font-semibold">建议补充的信息</h2>
-              <p className="hint">美国买家通常想知道这些，但你没提供，AI 没有编造。</p>
+          {missing.length > 0 && (
+            <section className="panel space-y-2">
+              <h2 className="text-lg font-extrabold">Add these if you can</h2>
+              <p className="text-xs text-muted">US shoppers usually look for this. You didn&apos;t provide it, so the AI did not make it up.</p>
               <ul className="list-disc space-y-1 pl-5 text-sm">
-                {r.missingInfoZh.map((m, i) => <li key={i}>{m}</li>)}
+                {missing.map((m, i) => <li key={i}>{m}</li>)}
               </ul>
             </section>
           )}
 
-          {r.notesZh.length > 0 && (
-            <section className="card space-y-2">
-              <h2 className="font-semibold">本地化说明</h2>
+          {notes.length > 0 && (
+            <section className="panel space-y-2">
+              <h2 className="text-lg font-extrabold">Localization notes</h2>
               <ul className="list-disc space-y-1 pl-5 text-sm">
-                {r.notesZh.map((m, i) => <li key={i}>{m}</li>)}
+                {notes.map((m, i) => <li key={i}>{m}</li>)}
               </ul>
             </section>
           )}
@@ -131,21 +139,25 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
       </div>
 
       {r.repaired && (
-        <details className="card">
-          <summary className="cursor-pointer font-semibold">查看 AI 初稿和它的问题（修正前）</summary>
+        <details className="panel">
+          <summary className="cursor-pointer font-bold">See the first draft and what the check found</summary>
           <div className="mt-4 grid gap-6 lg:grid-cols-2">
-            <pre className="whitespace-pre-wrap rounded-lg bg-stone-50 p-3 text-xs">{listingText(r.draft)}</pre>
+            <pre className="whitespace-pre-wrap rounded-xl bg-page p-4 font-sans text-xs leading-relaxed">{listingText(r.draft)}</pre>
             <IssueList issues={r.draftIssues} />
           </div>
         </details>
       )}
 
-      <details className="card">
-        <summary className="cursor-pointer font-semibold">运行记录</summary>
-        <div className="mt-3 space-y-2 text-sm">
-          <p className="text-muted">
-            模型 {r.model} · 输入 {r.tokens.in} / 输出 {r.tokens.out} tokens · 成本 ${r.costUsd.toFixed(4)} · 用时 {((doc.latencyMs ?? 0) / 1000).toFixed(1)} 秒
-          </p>
+      <details className="panel">
+        <summary className="cursor-pointer font-bold">Run log</summary>
+        <div className="mt-3 space-y-3 text-sm">
+          <div className="flex flex-wrap gap-2">
+            <span className="tag">{r.model}</span>
+            <span className="tag">{r.tokens.in.toLocaleString()} tokens in</span>
+            <span className="tag">{r.tokens.out.toLocaleString()} tokens out</span>
+            <span className="tag">${r.costUsd.toFixed(4)}</span>
+            <span className="tag">{((doc.latencyMs ?? 0) / 1000).toFixed(1)} s</span>
+          </div>
           <Steps steps={doc.steps} />
         </div>
       </details>
@@ -153,29 +165,31 @@ export default async function ListingPage({ params }: { params: Promise<{ id: st
   );
 }
 
-function Block({ label, meta, text, multiline }: { label: string; meta: string; text: string; multiline?: boolean }) {
+function Block({ label, meter, text, multiline, strong }: { label: string; meter: string; text: string; multiline?: boolean; strong?: boolean }) {
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between">
-        <span className="label mb-0">
-          {label} <span className="ml-1 text-xs font-normal text-muted">{meta}</span>
+      <div className="flex items-center justify-between gap-2">
+        <span className="font-bold">
+          {label} <span className="ml-1 text-xs font-normal text-muted">{meter}</span>
         </span>
         <CopyButton text={text} />
       </div>
-      <p className={`rounded-lg bg-stone-50 p-3 text-sm ${multiline ? "whitespace-pre-wrap" : ""}`}>{text || "（空）"}</p>
+      <p className={`rounded-xl bg-page p-3 leading-relaxed ${strong ? "text-base font-semibold" : "text-sm"} ${multiline ? "whitespace-pre-wrap" : ""}`}>
+        {text || "(empty)"}
+      </p>
     </div>
   );
 }
 
 function Steps({ steps }: { steps: { name: string; ms: number; ok: boolean; detail?: string }[] }) {
   if (!steps?.length) return null;
-  const names: Record<string, string> = { generate: "AI 生成", check: "规则检查", repair: "AI 修正", recheck: "再次检查" };
   return (
-    <ol className="space-y-1 text-sm">
+    <ol className="space-y-1">
       {steps.map((s, i) => (
         <li key={i} className={s.ok ? "" : "text-bad"}>
-          {i + 1}. {names[s.name] ?? s.name} · {(s.ms / 1000).toFixed(1)}s · {s.ok ? "成功" : "失败"}
-          {s.detail && <span className="text-muted"> · {s.detail}</span>}
+          <span className="font-semibold">{i + 1}. {STEP_NAMES[s.name] ?? s.name}</span>
+          <span className="text-muted">, {(s.ms / 1000).toFixed(1)} s, {s.ok ? "ok" : "failed"}</span>
+          {s.detail && <span className="text-muted"> ({s.detail})</span>}
         </li>
       ))}
     </ol>

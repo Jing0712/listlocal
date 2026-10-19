@@ -2,43 +2,68 @@ import Link from "next/link";
 import { currentUser } from "@/lib/auth/session";
 import { collections } from "@/lib/db";
 
+const TINTS = ["from-[#ffe7d6] to-[#ffd0b0]", "from-[#e5f0ff] to-[#cfe0ff]", "from-[#e8f7ee] to-[#cdeedb]", "from-[#f3e8ff] to-[#e4d0ff]", "from-[#fff6d6] to-[#ffe9a8]"];
+
 export default async function HistoryPage() {
   const user = (await currentUser())!;
   const { listings, checks } = await collections();
   const [rows, checkCount] = await Promise.all([
-    listings.find({ userId: user._id }, { projection: { productName: 1, createdAt: 1, status: 1, "result.finalIssues": 1, "result.final.title": 1, "result.repaired": 1 } }).sort({ createdAt: -1 }).limit(100).toArray(),
+    listings
+      .find({ userId: user._id }, { projection: { productName: 1, createdAt: 1, status: 1, "result.finalIssues": 1, "result.final.title": 1, "result.repaired": 1 } })
+      .sort({ createdAt: -1 })
+      .limit(100)
+      .toArray(),
     checks.countDocuments({ userId: user._id }),
   ]);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">历史记录</h1>
-        <p className="text-sm text-muted">共生成 {rows.length} 次 · 检查过 {checkCount} 个已有 listing</p>
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-end justify-between gap-2">
+        <div>
+          <h1 className="text-2xl font-extrabold">History</h1>
+          <p className="text-sm text-muted">
+            {rows.length} {rows.length === 1 ? "listing" : "listings"} created, {checkCount} existing {checkCount === 1 ? "listing" : "listings"} checked
+          </p>
+        </div>
+        <Link href="/app" className="btn-tao">Create a listing</Link>
       </div>
+
       {rows.length === 0 ? (
-        <div className="card text-sm text-muted">
-          还没有记录。<Link href="/app" className="underline">生成第一个 listing</Link>
+        <div className="panel py-12 text-center">
+          <p className="text-lg font-bold">No listings yet</p>
+          <p className="mb-4 text-sm text-muted">Your first three are free.</p>
+          <Link href="/app" className="btn-tao">Create your first listing</Link>
         </div>
       ) : (
-        <ul className="space-y-2">
-          {rows.map((r) => {
-            const errs = r.result?.finalIssues.filter((i) => i.severity === "error").length ?? 0;
-            const warns = r.result?.finalIssues.filter((i) => i.severity === "warning").length ?? 0;
+        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {rows.map((r, i) => {
+            const errs = r.result?.finalIssues.filter((x) => x.severity === "error").length ?? 0;
+            const warns = r.result?.finalIssues.filter((x) => x.severity === "warning").length ?? 0;
             return (
               <li key={r._id.toHexString()}>
-                <Link href={`/app/listings/${r._id.toHexString()}`} className="card flex items-center justify-between gap-4 hover:border-ink">
-                  <div className="min-w-0">
-                    <p className="font-medium">{r.productName}</p>
-                    <p className="truncate text-sm text-muted">{r.result?.final.title ?? (r.status === "failed" ? "生成失败" : "处理中")}</p>
+                <Link
+                  href={`/app/listings/${r._id.toHexString()}`}
+                  className="block h-full overflow-hidden rounded-[14px] bg-white ring-tao transition-shadow hover:ring-2"
+                >
+                  <div className={`bg-gradient-to-br ${TINTS[i % TINTS.length]} px-4 py-6`}>
+                    <p className="line-clamp-2 text-xl font-extrabold">{r.productName}</p>
                   </div>
-                  <div className="shrink-0 text-right text-xs">
-                    {r.status === "done" ? (
-                      <p className={errs ? "text-bad" : "text-ok"}>{errs ? `${errs} 个必须修改` : "通过"}{warns ? ` · ${warns} 个建议` : ""}</p>
-                    ) : (
-                      <p className="text-bad">{r.status === "failed" ? "失败" : "未完成"}</p>
-                    )}
-                    <p className="text-muted">{r.createdAt.toLocaleDateString("zh-CN", { timeZone: "America/Los_Angeles" })}</p>
+                  <div className="space-y-2 p-4">
+                    <p className="line-clamp-2 min-h-10 text-sm leading-snug">
+                      {r.result?.final.title ?? (r.status === "failed" ? "Generation failed" : "Did not finish")}
+                    </p>
+                    <div className="flex flex-wrap gap-1">
+                      {r.status !== "done" ? (
+                        <span className="tag tag-bad">{r.status === "failed" ? "Failed, not charged" : "Unfinished"}</span>
+                      ) : errs ? (
+                        <span className="tag tag-bad">{errs} must fix</span>
+                      ) : (
+                        <span className="tag tag-ok">Passed checks</span>
+                      )}
+                      {warns > 0 && <span className="tag">{warns} to review</span>}
+                      {r.result?.repaired && <span className="tag">Auto-fixed</span>}
+                    </div>
+                    <p className="text-xs text-muted">{r.createdAt.toLocaleDateString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric", year: "numeric" })}</p>
                   </div>
                 </Link>
               </li>

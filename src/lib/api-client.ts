@@ -8,11 +8,11 @@ export async function api<T = unknown>(path: string, init?: { method?: string; b
       body: init?.body ? JSON.stringify(init.body) : undefined,
     });
   } catch {
-    throw new ApiError(0, "网络连接失败，请检查网络后重试");
+    throw new ApiError(0, "Could not reach the server. Check your connection and try again.");
   }
   const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
   if (!res.ok) {
-    const msg = typeof data.error === "string" ? data.error : `请求失败（${res.status}）`;
+    const msg = typeof data.error === "string" ? data.error : `Request failed (${res.status})`;
     throw new ApiError(res.status, msg, data);
   }
   return data as T;

@@ -17,8 +17,8 @@ export type Issue = {
   field: string;
   /** The offending text (or a measured value such as "214 chars"). */
   match: string;
-  messageZh: string;
-  fixZh: string;
+  message: string;
+  fix: string;
   source: Source | null;
 };
 

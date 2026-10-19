@@ -27,8 +27,8 @@ export type PipelineResult = {
   finalIssues: Issue[];
   repaired: boolean;
   aiRiskFlags: ModelListing["riskFlags"];
-  notesZh: string[];
-  missingInfoZh: string[];
+  notes: string[];
+  missingInfo: string[];
   tokens: { in: number; out: number };
   costUsd: number;
   model: string;
@@ -113,8 +113,8 @@ export async function runPipeline(input: ProductInput, opts: PipelineOptions): P
     finalIssues,
     repaired,
     aiRiskFlags: latest.riskFlags,
-    notesZh: latest.notesZh,
-    missingInfoZh: latest.missingInfoZh,
+    notes: latest.notes,
+    missingInfo: latest.missingInfo,
     tokens,
     costUsd: Math.round(costUsd * 1e6) / 1e6,
     model: opts.model,
@@ -173,8 +173,8 @@ function mergeNotes(prev: ModelListing, next: ModelListing): ModelListing {
   return {
     ...next,
     riskFlags: uniq([...prev.riskFlags, ...next.riskFlags], (r) => r.text.toLowerCase()),
-    notesZh: next.notesZh.length ? next.notesZh : prev.notesZh,
-    missingInfoZh: uniq([...prev.missingInfoZh, ...next.missingInfoZh], (s) => s),
+    notes: next.notes.length ? next.notes : prev.notes,
+    missingInfo: uniq([...prev.missingInfo, ...next.missingInfo], (s) => s),
   };
 }
 
