@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #1c1917;
+  --color-paper: #fbfaf7;
+  --color-line: #e7e3da;
+  --color-muted: #6b665c;
+  --color-accent: #c2410c;
+  --color-accent-soft: #fff1e6;
+  --color-ok: #15803d;
+  --color-warn: #b45309;
+  --color-bad: #b91c1c;
+  --font-sans: "Inter", "PingFang SC", "Hiragino Sans GB", "Noto Sans SC", "Microsoft YaHei", system-ui, sans-serif;
+}
+
+html,
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+}
+
+.card {
+  @apply rounded-xl border border-line bg-white p-5;
+}
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg bg-ink px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50;
+}
+.btn-accent {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50;
+}
+.btn-ghost {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg border border-line bg-white px-3 py-1.5 text-sm transition hover:bg-stone-50 disabled:opacity-50;
+}
+.input {
+  @apply w-full rounded-lg border border-line bg-white px-3 py-2 text-sm outline-none transition focus:border-ink;
+}
+.label {
+  @apply mb-1 block text-sm font-medium;
+}
+.hint {
+  @apply text-xs text-muted;
+}

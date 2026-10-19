@@ -1,0 +1,124 @@
+{
+  "description": "Labeled listings for the deterministic rule engine. `expect` = rule ids that MUST fire; `forbid` = rule ids that must NOT fire (false-positive traps).",
+  "cases": [
+    {
+      "id": "clean-cup",
+      "listing": {
+        "title": "Trailmate Collapsible Silicone Water Cup, 16.9 oz (500 ml) Travel Cup for Camping and Hiking",
+        "bullets": [
+          "Packs Flat: Folds down to about 1.2 inches (3 cm) so it fits in a pocket",
+          "Food-Grade Silicone: Holds hot or cold drinks on the trail",
+          "Clip It Anywhere: The included carabiner attaches to a backpack strap",
+          "Lightweight: Weighs about 3 ounces (85 g)",
+          "Three Colors: Blue, green and gray"
+        ],
+        "description": "A cup that folds flat when you don't need it.",
+        "searchTerms": "foldable mug backpacking drinkware outdoor tumbler"
+      },
+      "ctx": { "ownBrand": "Trailmate", "sourceText": "500ml 折叠后 3cm 重量 85g" },
+      "expect": [],
+      "forbid": ["medical-claim", "pesticide-claim", "contact-info", "unsupported-number", "title-word-repeat", "third-party-brand"]
+    },
+    {
+      "id": "medical-pillow",
+      "listing": {
+        "title": "Memory Foam Pillow for Neck Pain Relief",
+        "bullets": ["Relieves pain in neck and shoulders overnight", "Helps cure insomnia naturally", "Breathable cover keeps you cool", "Fits standard pillowcases", "Machine-washable cover"],
+        "description": "Clinically proven to improve sleep.",
+        "searchTerms": "cervical pillow side sleeper"
+      },
+      "expect": ["medical-claim"],
+      "forbid": []
+    },
+    {
+      "id": "lookalike-words",
+      "listing": {
+        "title": "Secure Lid Snack Container for Kids",
+        "bullets": ["Lid secures tightly so snacks stay fresh", "Treat yourself to a tidy lunch bag", "Dishwasher safe on the top rack", "Stackable to save space", "Set of four containers"],
+        "description": "A healthy-looking lunch starts with a good container.",
+        "searchTerms": "bento box lunch container"
+      },
+      "expect": [],
+      "forbid": ["medical-claim"]
+    },
+    {
+      "id": "antibacterial-cutting-board",
+      "listing": {
+        "title": "Antibacterial Bamboo Cutting Board Set",
+        "bullets": ["Antimicrobial surface kills 99.9% of germs", "Made from bamboo for a natural look", "Juice groove catches liquids", "Three sizes for every task", "Easy to clean by hand"],
+        "description": "Eco-friendly and non-toxic.",
+        "searchTerms": "chopping board kitchen"
+      },
+      "expect": ["pesticide-claim", "bamboo-soy-claim", "environmental-claim"],
+      "forbid": []
+    },
+    {
+      "id": "promo-and-guarantee",
+      "listing": {
+        "title": "#1 Best Seller Phone Stand - Free Shipping!",
+        "bullets": ["Money-back guarantee if you are not happy", "Adjustable angle for video calls", "Works with phones and small tablets", "Weighted base resists tipping", "Folds flat for travel"],
+        "description": "Limited time discount.",
+        "searchTerms": "desk phone holder top rated"
+      },
+      "expect": ["promotional-language", "guarantee-language", "title-special-chars"],
+      "forbid": []
+    },
+    {
+      "id": "brand-hijack",
+      "listing": {
+        "title": "Tumbler with Handle 40 oz, Stanley Style Cup",
+        "bullets": ["Same quality as YETI at half the price", "Double-wall insulation", "Fits most cup holders", "Leak-resistant lid", "Includes two straws"],
+        "description": "Your new favorite tumbler.",
+        "searchTerms": "stanley dupe yeti alternative owala"
+      },
+      "expect": ["third-party-brand"],
+      "forbid": []
+    },
+    {
+      "id": "limits",
+      "listing": {
+        "title": "Kitchen Towel Towels Kitchen Towel Set Cotton Towel Dish Cloth Kitchen Cleaning Cloth Absorbent Towel Pack Large Towel for Kitchen Bathroom Car Garage Workshop Window Glass Mirror Dusting Polishing Lint Free Quick Dry",
+        "bullets": ["Soft", "ABSORBENT COTTON WEAVE DRIES FAST", "Material: N/A"],
+        "description": "Visit www.towelshop.com or call +1 626 555 0199",
+        "searchTerms": "kitchen towel dish rag tea towel hand towel bar mop microfiber rag cleaning cloth cotton terry absorbent quick dry lint free reusable washable heavy duty restaurant commercial grade bulk pack 12 24 36 white gray blue striped waffle weave flour sack housewarming"
+      },
+      "expect": ["title-length", "title-word-repeat", "bullet-too-short", "bullet-all-caps", "bullet-placeholder", "contact-info", "search-terms-bytes"],
+      "forbid": []
+    },
+    {
+      "id": "untranslated-and-emoji",
+      "listing": {
+        "title": "Pet Hair Remover Roller 宠物",
+        "bullets": ["Removes pet hair from couches ✓", "Reusable with no sticky sheets", "Empties with one click", "Works on carpets and bedding", "Compact for storage"],
+        "description": "Great for dog and cat owners.",
+        "searchTerms": "lint roller fur remover"
+      },
+      "expect": ["untranslated-text", "bullet-special-chars"],
+      "forbid": []
+    },
+    {
+      "id": "invented-spec",
+      "listing": {
+        "title": "Portable Neck Fan, Bladeless, USB Rechargeable",
+        "bullets": ["Long Battery: 5000mAh battery runs for 16 hours", "Three Speeds: Pick the breeze you want", "Quiet: Runs at 25 dB on low", "Light: Weighs 230 g", "Charges by USB-C"],
+        "description": "Stay cool on hot days.",
+        "searchTerms": "wearable fan personal cooling"
+      },
+      "ctx": { "sourceText": "挂脖风扇 无叶 三档风速 电池 4000mAh 重量 230g" },
+      "expect": ["unsupported-number"],
+      "forbid": []
+    },
+    {
+      "id": "dimensions-not-phone",
+      "listing": {
+        "title": "Storage Bin with Lid, 15.7 x 11.8 x 9.8 Inches",
+        "bullets": ["Size: 15.7 x 11.8 x 9.8 inches (40 x 30 x 25 cm)", "Stackable when lids are on", "Clear sides show what is inside", "Handles on both ends", "Set of three bins"],
+        "description": "Measures 15.7 x 11.8 x 9.8 inches.",
+        "searchTerms": "closet organizer plastic tote"
+      },
+      "ctx": { "sourceText": "收纳箱 40 x 30 x 25 cm 三个装" },
+      "expect": [],
+      "forbid": ["contact-info", "unsupported-number"]
+    }
+  ]
+}
