@@ -5,6 +5,7 @@ import { collections } from "@/lib/db";
 import { clientIp, HttpError, readJson, route } from "@/lib/http";
 import { rateLimit } from "@/lib/rate-limit";
 import { sendVerificationEmail } from "@/lib/auth/verification";
+import { EmailError } from "@/lib/email";
 import { startSession } from "@/lib/auth/session";
 
 const Body = z.object({
@@ -34,8 +35,15 @@ export const POST = route(async (req: Request) => {
     throw e;
   }
 
-  await sendVerificationEmail(userId, email);
-  // Logged in but unverified: they can see the "check your email" page and resend, nothing else.
+  // The account exists either way. If the email fails, the user still lands on the
+  // verify page (logged in, unverified) and is told plainly that sending failed.
+  let emailSent = true;
+  try {
+    await sendVerificationEmail(userId, email);
+  } catch (e) {
+    if (!(e instanceof EmailError)) throw e;
+    emailSent = false;
+  }
   await startSession(userId.toHexString());
-  return NextResponse.json({ ok: true, email }, { status: 201 });
+  return NextResponse.json({ ok: true, email, emailSent }, { status: 201 });
 });

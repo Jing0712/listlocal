@@ -18,8 +18,8 @@ export function AuthForm({ mode, next }: { mode: "login" | "signup"; next?: stri
     setError(null);
     try {
       if (mode === "signup") {
-        await api("/api/auth/signup", { body: { email, password } });
-        window.location.href = "/verify-email";
+        const r = await api<{ emailSent: boolean }>("/api/auth/signup", { body: { email, password } });
+        window.location.href = r.emailSent ? "/verify-email" : "/verify-email?status=send-failed";
       } else {
         const r = await api<{ emailVerified: boolean }>("/api/auth/login", { body: { email, password } });
         window.location.href = r.emailVerified ? safeNext : "/verify-email";

@@ -13,7 +13,16 @@ export default async function VerifyEmailPage({ searchParams }: { searchParams: 
       <div className="tao-gradient mx-auto flex h-14 w-14 items-center justify-center rounded-full text-2xl text-white" aria-hidden>
         ✉
       </div>
-      {status === "invalid" ? (
+      {status === "send-failed" ? (
+        <>
+          <h1 className="text-2xl font-extrabold">We couldn&apos;t send your verification email</h1>
+          <p className="text-sm text-muted">
+            Your account was created, but our email service rejected the message to{" "}
+            <span className="font-semibold text-ink">{user?.email ?? "your address"}</span>. Try resending in a moment. If it keeps failing,
+            contact the ListLocal team.
+          </p>
+        </>
+      ) : status === "invalid" ? (
         <>
           <h1 className="text-2xl font-extrabold">This link has expired or was already used</h1>
           <p className="text-sm text-muted">Verification links work once and expire after 24 hours. Log in to get a new one.</p>
