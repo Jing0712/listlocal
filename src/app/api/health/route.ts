@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { pingDb } from "@/lib/db";
 import { optionalEnv } from "@/lib/env";
+import { emailProvider } from "@/lib/email";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,8 @@ export async function GET() {
       anthropic: Boolean(process.env.ANTHROPIC_API_KEY),
       stripe: Boolean(process.env.STRIPE_SECRET_KEY && process.env.STRIPE_PRICE_ID),
       stripeWebhook: Boolean(process.env.STRIPE_WEBHOOK_SECRET),
-      email: Boolean(process.env.RESEND_API_KEY),
+      email: emailProvider() !== "none",
+      emailProvider: emailProvider(),
       sessionSecret: (process.env.SESSION_SECRET ?? "").length >= 32,
     },
   };
