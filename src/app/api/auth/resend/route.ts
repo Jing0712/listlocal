@@ -8,7 +8,7 @@ import { rateLimit } from "@/lib/rate-limit";
 export const POST = route(async () => {
   const user = await requireUser({ allowUnverified: true });
   if (user.emailVerified) return NextResponse.json({ ok: true, alreadyVerified: true });
-  await rateLimit(`resend:${user._id.toHexString()}`, 3, 3600);
+  await rateLimit(`resend:${user._id.toHexString()}`, 5, 900);
   try {
     await sendVerificationEmail(user._id, user.email);
   } catch (e) {
