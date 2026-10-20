@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth/session";
 import { sendVerificationEmail } from "@/lib/auth/verification";
 import { HttpError, route } from "@/lib/http";
-import { EmailError } from "@/lib/email";
+import { describeEmailFailure, EmailError } from "@/lib/email";
 import { rateLimit } from "@/lib/rate-limit";
 
 export const POST = route(async () => {
@@ -13,7 +13,7 @@ export const POST = route(async () => {
     await sendVerificationEmail(user._id, user.email);
   } catch (e) {
     if (e instanceof EmailError) {
-      throw new HttpError(502, "We couldn't send the email: our email service rejected it. Try again later or contact the ListLocal team.");
+      throw new HttpError(502, `We couldn't send the email. ${describeEmailFailure(e.kind)}`, { reason: e.kind });
     }
     throw e;
   }
