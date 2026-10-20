@@ -20,6 +20,16 @@ export async function GET() {
       stripeWebhook: Boolean(process.env.STRIPE_WEBHOOK_SECRET),
       email: emailProvider() !== "none",
       emailProvider: emailProvider(),
+      // Shape checks only, never the values: catches pasted quotes, spaces or a wrong account.
+      gmail: process.env.GMAIL_USER
+        ? {
+            user: (process.env.GMAIL_USER ?? "").trim().replace(/^(.).*(@.*)$/, "$1***$2"),
+            userLooksValid: /^[^\s@<>"']+@[^\s@<>"']+\.[a-z]{2,}$/i.test((process.env.GMAIL_USER ?? "").trim()),
+            userHasWhitespace: /\s/.test(process.env.GMAIL_USER ?? ""),
+            appPasswordLength: (process.env.GMAIL_APP_PASSWORD ?? "").replace(/\s+/g, "").length,
+            appPasswordOnlyLetters: /^[a-z]+$/i.test((process.env.GMAIL_APP_PASSWORD ?? "").replace(/\s+/g, "")),
+          }
+        : null,
       sessionSecret: (process.env.SESSION_SECRET ?? "").length >= 32,
     },
   };

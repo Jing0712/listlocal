@@ -81,7 +81,7 @@ export async function sendEmail(msg: Message) {
 let gmail: nodemailer.Transporter | undefined;
 
 async function sendViaGmail(msg: Message) {
-  const user = optionalEnv("GMAIL_USER");
+  const user = optionalEnv("GMAIL_USER").trim();
   if (!gmail) {
     gmail = nodemailer.createTransport({
       host: "smtp.gmail.com",
