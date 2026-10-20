@@ -28,13 +28,6 @@ const EXAMPLES = [
   },
 ];
 
-const VS = [
-  ["Policy checks", "The same rules run on every listing, and each finding links to its source", "Depends on what the model remembers; no sources"],
-  ["Made-up specs", "Every number is matched against your product info, unit conversions included", "Often fills in plausible specs you never gave"],
-  ["Character limits", "Counted by code, search terms in UTF-8 bytes", "Language models miscount characters"],
-  ["Your history", "Every draft, finding and fix is saved per listing", "Lost in a long chat"],
-];
-
 export default async function Home() {
   const user = await currentUser().catch(() => null);
   return (
@@ -84,52 +77,26 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <div className="panel">
-          <h2 className="mb-4 text-xl font-extrabold">Why not just ask a chatbot?</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[520px] text-left text-sm">
-              <thead>
-                <tr className="text-muted">
-                  <th className="pb-2 pr-4 font-medium"></th>
-                  <th className="pb-2 pr-4 font-bold text-tao">ListLocal</th>
-                  <th className="pb-2 font-medium">General chatbot</th>
-                </tr>
-              </thead>
-              <tbody>
-                {VS.map(([k, a, b]) => (
-                  <tr key={k} className="border-t border-line align-top">
-                    <td className="py-3 pr-4 font-bold">{k}</td>
-                    <td className="py-3 pr-4">{a}</td>
-                    <td className="py-3 text-muted">{b}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div className="panel">
-          <h2 className="mb-4 text-xl font-extrabold">How it works</h2>
-          <ol className="space-y-4">
-            {[
-              ["Describe the product", "In Chinese is fine. Add photos if you have them."],
-              ["AI writes the listing", "Title, five bullets, description and backend search terms."],
-              ["Rules check every line", "Medical and antibacterial claims, competitor brands, limits, invented numbers."],
-              ["Auto-fix, then you decide", "Problems go back to the AI once; anything left is flagged for you."],
-            ].map(([t, d], i) => (
-              <li key={t} className="flex gap-3">
-                <span className="tao-gradient flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-extrabold text-white">
-                  {i + 1}
-                </span>
-                <div>
-                  <p className="font-bold">{t}</p>
-                  <p className="text-sm text-muted">{d}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </div>
+      <section className="panel">
+        <h2 className="mb-5 text-xl font-extrabold">How it works</h2>
+        <ol className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            ["Describe the product", "In Chinese is fine. Add photos if you have them."],
+            ["AI writes the listing", "Title, five bullets, description and backend search terms."],
+            ["Rules check every line", "Medical and antibacterial claims, competitor brands, limits, invented numbers."],
+            ["Auto-fix, then you decide", "Problems go back to the AI once; anything left is flagged for you."],
+          ].map(([t, d], i) => (
+            <li key={t} className="flex gap-3">
+              <span className="tao-gradient flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-extrabold text-white">
+                {i + 1}
+              </span>
+              <div>
+                <p className="font-bold">{t}</p>
+                <p className="text-sm text-muted">{d}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
       </section>
 
       <section id="pricing" className="grid gap-4 md:grid-cols-2">
